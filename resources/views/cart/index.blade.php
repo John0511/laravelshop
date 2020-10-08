@@ -1,0 +1,81 @@
+@extends('layouts.app')
+@section('content')
+<h1>我的購物車</h1>
+<form action="{{route('order.store')}}" method="post" id="order-form">
+    @csrf    
+<table class="table table-striped">
+    <tr>
+        <th colspan="2">商品名稱</th>
+        <th nowrap class="text-right">商品單價</th>
+        <th nowrap class="text-center">購買數量</th>
+        <th nowrap class="text-right">小計</th>
+        <th>功能</th>
+    </tr>
+    @forelse ($user->cart as $cart)
+    <tr>
+       <td>
+           <a target="_blank" href="/product/{{$cart->product_id}}">
+              <img src="{{$cart->product->image_url}}" class="img-thumbnail" style="width:120px;">
+           </a>
+       </td>
+       <td>
+           <a target="_blank" href="/product/{{$cart->product_id}}"><h5>{{$cart->product->title}}</h5></a>
+           @if (!$cart->product->on_sale)
+           <div class="warning">該商品已下架</div>
+           @endif
+        </td>
+        <td class="text-right"><span id="price-{{$cart->id}}">{{$cart->product->price}}</span></td>
+        <td class="text-center"><input type="number" min="1" class="form-control tex-center amount" name="amount[{{$cart->product_id}}]" value="{{$cart->amount}}" data-cartid="{{$cart->id}}"></td>
+        <td class="text-right"><span class="sum" id="sum-{{$cart->id}}">{{$cart->product->price * $cart->amount}}</span></td>
+        <td nowrap><a href="#" class="btn btn-danger btn-sm btn-del-from-cart" data-id="{{$cart->product_id}}">移除</a></td>     
+    </tr>
+    @empty
+    <tr>
+        <td><h1>目前購物車內沒有商品</h1></td>
+    </tr>
+     @endforelse
+</table>
+@if (count($user->cart))
+<div class="form-group row">
+<label class="col-form-label col-sm-3 text-md-right">收貨地址</label>
+<div class="col-sm-7">
+<input type="text" class="form-control" name="address" value="{{$user->address}}">
+</div>
+<div class="col-sm-2">
+  <button type="submit" class="btn btn-primary btn-add-to-cart">送出訂單</button>
+</div>
+</div>
+    
+@endif
+</form>
+@endsection
+
+@section('scriptsAfterJs')
+    <script>
+        $(document).ready(function () {
+            $('.btn-del-from-cart').click(function () {
+                var product_id=$(this).data('id');
+                swal({
+                    title:"確認要刪除商品?",
+                    icon:"warning",
+                    buttons:["取消","確定"],
+                    dangerMode: true,
+                }).then(function (willDeltete) {
+                   if(!willDeltete){
+                       return;
+                   }
+                   axios.delete('/cart/' + product_id)
+                   .then(function(){
+                       location.reload()
+                   }); 
+                });
+            });
+        });
+        $('.amount').change(function (){
+            var cartid = $(this).data('cartid');
+            var sum = $(this).val() * $('#price-'+cartid).text();
+            $('#sum-'+cartid).text(sum);
+        });
+        
+    </script>
+@endsection
