@@ -24,7 +24,7 @@
                 <li class="nav-item">
                     <a class="nav-link cartitem" href="{{route('cart.index')}}">我的購物車 
                         <i class="fa fa-shopping-cart" aria-hidden="true"></i> <span class="badge badge-pill badge-danger">
-                       @if (session()->has('cart'))
+                       @if (session()->has('request'))
                            {{count(session()->get('request'))}}
                        @else
                            {{0}}    
